@@ -111,6 +111,7 @@ def get_book(book_id: str, db: Session = Depends(get_db)) -> List[Book]:
 
 @AdminBookTransactionRouter.post('/books/', status_code=status.HTTP_201_CREATED)
 def add_book(book: Book, db: Session = Depends(get_db)):
+    print(book)
     return book_servies.add_book(book=book, db=db)
 
 @AdminBookTransactionRouter.patch('/books/{book_id}', response_model=Book)
