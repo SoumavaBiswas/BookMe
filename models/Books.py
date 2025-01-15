@@ -1,7 +1,5 @@
 from pydantic import BaseModel, field_validator, model_validator
 from typing import Optional
-import uuid
-
 
 class Book(BaseModel):
     book_id: Optional[str] = None
@@ -23,6 +21,8 @@ class Book(BaseModel):
         if value <= 0:
             raise ValueError("Price should be positive.")
         return value
+    
+    
 
 
 class BookUpdateModel(BaseModel):

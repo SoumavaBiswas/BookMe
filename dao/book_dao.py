@@ -2,13 +2,21 @@ from sqlalchemy.orm import Session
 from models.Book_db import BookDB
 from models.Books import Book, BookUpdateModel
 from fastapi import HTTPException, status, Response
+from sqlalchemy.exc import IntegrityError
+import psycopg2
 
 def add_book(book: Book, db: Session):
     book_obj = book.model_dump()
     db_book = BookDB(**book_obj)
-    db.add(db_book)
-    db.commit()
-    return {"message": f"Book added with book id: {db_book.book_id}"}
+    try:
+        db.add(db_book)
+        db.commit()
+        return {"message": f"Book added with book id: {db_book.book_id}"}
+    except IntegrityError as e:
+        db.rollback()
+        if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"ISBN: {book.isbn} already exists.")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="An Intefgrity error occured.")
 
 def get_books(db: Session):
     return db.query(BookDB).all()

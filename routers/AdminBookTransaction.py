@@ -3,7 +3,8 @@ from typing import List
 from models.Books import Book, BookUpdateModel
 from sqlalchemy.orm import Session
 from db.base import get_db
-from services import book_servies
+from dao import book_dao
+
 
 
 AdminBookTransactionRouter = APIRouter()
@@ -103,22 +104,22 @@ books = [
 
 @AdminBookTransactionRouter.get('/books')
 def get_books(db: Session = Depends(get_db)) -> List[Book]:
-    return book_servies.get_books(db=db)
+    return book_dao.get_books(db=db)
 
 @AdminBookTransactionRouter.get('/books/{book_id}', response_model=Book)
 def get_book(book_id: str, db: Session = Depends(get_db)) -> List[Book]:
-   return book_servies.get_book(book_id=book_id, db=db)
+   return book_dao.get_book(book_id=book_id, db=db)
 
 @AdminBookTransactionRouter.post('/books/', status_code=status.HTTP_201_CREATED)
 def add_book(book: Book, db: Session = Depends(get_db)):
     print(book)
-    return book_servies.add_book(book=book, db=db)
+    return book_dao.add_book(book=book, db=db)
 
 @AdminBookTransactionRouter.patch('/books/{book_id}', response_model=Book)
 def update_book(book_id: str, book: BookUpdateModel, db: Session = Depends(get_db)):
-    return book_servies.update_book(book_id=book_id, book=book, db=db)
+    return book_dao.update_book(book_id=book_id, book=book, db=db)
 
 
 @AdminBookTransactionRouter.delete('/books/{book_id}')
 def delete_book(book_id: str, db: Session = Depends(get_db)):
-    return book_servies.delete_book(book_id=book_id, db=db)
+    return book_dao.delete_book(book_id=book_id, db=db)
