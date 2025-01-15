@@ -12,11 +12,8 @@ class Book(BaseModel):
     publisher: Optional[str] = "Unknown"
     price: int 
 
-    @model_validator(mode="before")
-    def assign_book_id(cls, values):
-        if not values.get('book_id'):
-            values['book_id'] = str(uuid.uuid4())
-        return values
+    class Config:
+        arbitrary_types_allowed = True
 
     @field_validator('isbn')
     def isbn_validator(cls, value):
@@ -32,10 +29,10 @@ class Book(BaseModel):
 
 
 class BookUpdateModel(BaseModel):
-    genre: Optional[str] = "Unknown"
-    author: str = "Unknown"
-    publisher: Optional[str] = "Unknown"
-    price: int 
+    genre: Optional[str] = None
+    author: str = None
+    publisher: Optional[str] = None
+    price: int = 0
 
     @field_validator('price')
     def price_validator(cls, value):

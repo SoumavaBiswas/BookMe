@@ -1,6 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from typing import List
-from Models.Books import Book, BookUpdateModel
+from models.Books import Book, BookUpdateModel
+from sqlalchemy.orm import Session
+from db.base import get_db
+from services import book_servies
 
 
 AdminBookTransactionRouter = APIRouter()
@@ -99,45 +102,22 @@ books = [
 
 
 @AdminBookTransactionRouter.get('/books')
-def get_books() -> List[Book]:
-    res = []
-    for book in books:
-        book_obj = Book(**book)
-        res.append(book_obj)
-    return res
-
+def get_books(db: Session = Depends(get_db)) -> List[Book]:
+    return book_servies.get_books(db=db)
 
 @AdminBookTransactionRouter.get('/books/{book_id}', response_model=Book)
-def get_book(book_id: str) -> List[Book]:
-    for book in books:
-        if book["book_id"] == book_id:
-            return Book(**book)
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Book with ID: {book_id} not found.")
-
+def get_book(book_id: str, db: Session = Depends(get_db)) -> List[Book]:
+   return book_servies.get_book(book_id=book_id, db=db)
 
 @AdminBookTransactionRouter.post('/books/', status_code=status.HTTP_201_CREATED)
-def add_book(book: Book):
-    new_book = book.model_dump()
-    books.append(new_book)
-    return {"message": f"New Book added with book id: {new_book['book_id']}"}
+def add_book(book: Book, db: Session = Depends(get_db)):
+    return book_servies.add_book(book=book, db=db)
 
 @AdminBookTransactionRouter.patch('/books/{book_id}', response_model=Book)
-def update_book(book_id: str, book: BookUpdateModel):
-    new_book = book.model_dump()
-    for curr_book in books:
-        if curr_book["book_id"] == book_id:
-            curr_book["price"] = new_book["price"]
-            curr_book["author"] = new_book["author"]
-            curr_book["publisher"] = new_book["publisher"]
-            return curr_book
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Book with ID: {book_id} not found.")
+def update_book(book_id: str, book: BookUpdateModel, db: Session = Depends(get_db)):
+    return book_servies.update_book(book_id=book_id, book=book, db=db)
 
 
 @AdminBookTransactionRouter.delete('/books/{book_id}')
-def delete_book(book_id: str):
-    for curr_book in books:
-        if curr_book["book_id"] == book_id:
-           books.remove(curr_book)
-           return {"message": f"Successfully deleted book with {book_id}"}
-
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Book with ID: {book_id} not found.")
+def delete_book(book_id: str, db: Session = Depends(get_db)):
+    return book_servies.delete_book(book_id=book_id, db=db)
